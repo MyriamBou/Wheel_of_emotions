@@ -9,6 +9,10 @@ import dash_table
 import dash_bootstrap_components as dbc
 from app import app
 import plotly.express as px
+import matplotlib.pyplot as plt
+import numpy as np
+from django.db.models import Sum
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 # needed only if running this as a single page app
 #external_stylesheets = [dbc.themes.LUX]
 
@@ -28,8 +32,12 @@ tab1_content= dash_table.DataTable(
         'width':'1000px',
         'height':'400px',
         },
-        style_header={'backgroundColor': '#25597f', 'color': 'white'},
-        css=[ {'selector': '.row', 'rule': 'margin: 0'}],
+       export_format='csv',
+       #export_format_style={'BackgroundColor':'white'},
+       #style_button={'backgroundColor': '#25597f', 'color': 'white'},
+       
+       style_header={'backgroundColor': '#25597f', 'color': 'white'},
+        css=[ {'selector': '.row', 'rule': 'margin: 0'} ],
         style_cell={
             'backgroundColor': 'white',
             'color': 'black',
@@ -44,6 +52,7 @@ tab2_content= dash_table.DataTable(
         'height':'400px',
                         'padding': 10},
         style_header={'backgroundColor': '#25597f', 'color': 'white'},
+        export_format='csv',
         css=[ {'selector': '.row', 'rule': 'margin: 0'}],
         style_cell={
             'backgroundColor': 'white',
@@ -51,8 +60,53 @@ tab2_content= dash_table.DataTable(
             'fontSize': 13,
             'font-family': 'Nunito Sans',
             'textAlign':'left'}),
-fig1 = px.histogram(df,x="Emotion", color="Emotion", marginal="rug", hover_name="Text", histfunc="sum")
+fig1 = px.histogram(df,x="Emotion", color="Emotion", marginal="rug", 
+hover_name="Text", histfunc="sum")
 fig2= px.sunburst(df2, path=["sentiment"],color="sentiment",hover_data=df2.columns)
+fig4= listEmotion = df["Emotion"].unique()
+listEmotionCat = df["Emotion"].unique()
+def percentage (l,sentiment) :
+    i = 0
+    sum = 0
+    for i in range (len(l)):
+        if l[i] == sentiment:
+            sum += 1
+    return round((sum/len(l))*100)
+
+listE = []
+sumE = 0
+for i in range (len(listEmotion)):
+    sumE = percentage(df["Emotion"],listEmotionCat[i])
+
+    listE.append(sumE)
+
+fig4= px.pie(values=listE, names=listEmotion, title='Pourcentage des Emotions')
+
+
+#Figure 5 -
+
+fig5 = go.Figure(data=[go.Pie(labels=df.Emotion.unique(),
+                             values=df.groupby('Emotion').Text.nunique(), 
+                             textinfo='label+percent',
+                            )],
+                layout ={
+                   'title':'Proportion Emotion for Kaggle set',
+                   'font_color':'grey'
+               })
+
+# - Figure 6 -
+
+fig6 = go.Figure(data=[go.Pie(labels=df2.sentiment.unique(),
+                             values=df2.groupby('sentiment').content.nunique(), 
+                             textinfo='label+percent',
+                            )],
+                             layout ={
+                   'title':'Proportion Emotion for World set',
+                   'font_color':'grey'
+               })
+
+
+
 
 layout = html.Div([
     dbc.Container([
@@ -60,45 +114,58 @@ layout = html.Div([
             dbc.Col(html.H1("Datas Visualisation"), className="mb-2")
         ]),
         dbc.Row([
-            dbc.Col(html.H6(children='Visualisons notre data'), className="mb-4")
+            dbc.Col(html.H6(children='Let s discover our two sets of data !'), className="mb-4")
         ]),
 
         dbc.Row([
-            dbc.Col(dbc.Card(html.H3(children='Emotion_final',
+            dbc.Col(dbc.Card(html.H3(children='Data analysis before classification',
                                      className="text-center text-light bg-dark"), body=True, color="dark")
                     , className="mb-4")
         ]),
 
         dbc.Row([
-          dbc.Tabs(
-    [
-        dbc.Tab(tab1_content, label="Data Kaggle"),
+          dbc.Tabs([dbc.Tab(tab1_content, label="Data Kaggle"),
         dbc.Tab(tab2_content, label="Data World"),
-        
-    ]
+        ]
 )  
         ]),
-        dbc.Row([
-            dbc.Col(html.H1("Data Kaggle Visualisation"), className="mb-2")
+         
+  dbc.Row([
+            dbc.Col(html.H1("Frequency of occurrence of Emotions"), className="mb-2")
         ]),
+        dbc.Row([
+                dbc.Col(dcc.Graph (id='Graphique5', figure=fig5)),
+                dbc.Col(dcc.Graph (id='Graphique6', figure=fig6)),
+            ], align='center'),      
+        
         dbc.Row([
             dbc.Col(dcc.Graph (id='Graphique1', figure=fig1))
         ]),
 
-        dbc.Row([
-            dbc.Col(html.H1("Data World Visualisation"), className="mb-2")
-        ]),
-        dbc.Row([
-            dbc.Col(dcc.Graph (id='Graphique2', figure=fig2))
+
+         dbc.Row([
+            dbc.Col(html.H1("Frequency of occurrence of words"), className="mb-2")
         ]),
 
-    
+        dbc.Row([
+            dbc.Col(html.H2("Analyse des données: Nous pouvons facilement voir que pour le premier jeu de donnée, le modèle de classification Knn n'est pas du tout pertinent, parce que il est basé sur les points les pluls similaires. Son seul avantage est l'horraire d'exécution du calcul. Le modèle SGDC est le plus pertinent pour notre cas. Dans le deuxième jeu de donnée, les labels sont nobreux. On obtient les meilleurs résultats avec les logreg et SVC modèles."), className="mb-2")
+        ]),  
+          
 
- 
+         
+
+        
+
+       
+        
+         
+         
+        
+      
 
 
 
-])
+]),
 
 ])
 # page callbacks
