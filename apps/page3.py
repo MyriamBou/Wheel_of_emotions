@@ -27,7 +27,6 @@ from sklearn.tree import DecisionTreeClassifier
 
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import string
 
 
