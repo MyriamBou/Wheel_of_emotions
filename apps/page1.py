@@ -9,9 +9,7 @@ import dash_table
 import dash_bootstrap_components as dbc
 from app import app
 import plotly.express as px
-import matplotlib.pyplot as plt
 import numpy as np
-from django.db.models import Sum
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 # needed only if running this as a single page app
 #external_stylesheets = [dbc.themes.LUX]
@@ -147,9 +145,7 @@ layout = html.Div([
             dbc.Col(html.H1("Frequency of occurrence of words"), className="mb-2")
         ]),
 
-        dbc.Row([
-            dbc.Col(html.H2("Analyse des données: Nous pouvons facilement voir que pour le premier jeu de donnée, le modèle de classification Knn n'est pas du tout pertinent, parce que il est basé sur les points les pluls similaires. Son seul avantage est l'horraire d'exécution du calcul. Le modèle SGDC est le plus pertinent pour notre cas. Dans le deuxième jeu de donnée, les labels sont nobreux. On obtient les meilleurs résultats avec les logreg et SVC modèles."), className="mb-2")
-        ]),  
+        
           
 
          
